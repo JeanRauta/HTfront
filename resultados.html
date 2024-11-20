@@ -66,17 +66,17 @@
     </div>
 
     <div class="controls">
-        <div>
-            <button class="vol material-symbols-outlined">volume_up</button>
-            <input type="range" id="master-volume" min="0" max="100" value="100" title="Volume">
-            <button class="voltar material-symbols-outlined">skip_previous</button>
-            <button class="playPause material-symbols-outlined">play_arrow</button>
-            <button class="avançar material-symbols-outlined">skip_next</button>
+        <div class="controls-conteiner">
+            <div>
+                <button class="voltar material-symbols-outlined">skip_previous</button>
+                <button class="playPause">play_arrow</button>
+                <button class="avançar material-symbols-outlined">skip_next</button>
+            </div>
+            <input type="range" class="input-renge-vol" id="seek-range" min="0.01" max="100" step="0.1" value="0.01">
+            <button id="transcribe-first-track" style="position: fixed; right: 20px; bottom: 10px; padding: 10px 20px; font-size: 16px;">
+                Identificar Acordes
+            </button>
         </div>
-        <input type="range" class="input-renge-vol" id="seek-range" min="0.01" max="100" step="0.1" value="0.01">
-        <button id="transcribe-first-track" style="position: fixed; right: 20px; bottom: 10px; padding: 10px 20px; font-size: 16px;">
-            Identificar Acordes
-        </button>
     </div>
 
     <script src="https://unpkg.com/waveform-playlist@4.2.2/build/waveform-playlist.var.min.js"></script>
@@ -287,11 +287,6 @@
 
 
 
-                    document.getElementById('master-volume').addEventListener('input', function() {
-                        var volume = parseFloat(this.value)
-                        ee.emit('mastervolumechange', volume);
-                    });
-
                     // document.getElementById('auto').addEventListener('change', function() {
                     //     ee.emit("automaticscroll", this.checked);
                     // });
@@ -378,52 +373,57 @@
                         });
                     }
 
-                    function updateCurrentChord(currentTime) {
-                        let currentChord = '--';
-                        let previousChord = '--';
-                        let nextChord = '--';
-                        let chordImagePath = '';
-                        let previousChordImagePath = '';
-                        let nextChordImagePath = '';
+                    function normalizeChordName(chord) {
+    return chord.replace('#', 'sharp');
+}
 
-                        for (let i = 0; i < acordes.length; i++) {  
-                            if (currentTime >= acordes[i].timestamp) {
-                                currentChord = acordes[i].chord;
-                                chordImagePath = `./chords/${currentChord}.png`;
+function updateCurrentChord(currentTime) {
+    let currentChord = '--';
+    let previousChord = '--';
+    let nextChord = '--';
+    let chordImagePath = '';
+    let previousChordImagePath = '';
+    let nextChordImagePath = '';
 
-                                if (i > 0) {
-                                    previousChord = acordes[i - 1].chord;
-                                    previousChordImagePath = `./chords/${previousChord}.png`;
-                                }
-                                if (i < acordes.length - 1) {
-                                    nextChord = acordes[i + 1].chord;
-                                    nextChordImagePath = `./chords/${nextChord}.png`;
-                                }
-                            } else {
-                                break;
-                            }
-                        }
+    for (let i = 0; i < acordes.length; i++) {  
+        if (currentTime >= acordes[i].timestamp) {
+            currentChord = acordes[i].chord;
+            chordImagePath = `./chords/${normalizeChordName(currentChord)}.png`;
 
-                        document.getElementById('current-chord').textContent = currentChord;
-                        document.getElementById('previous-chord').textContent = previousChord;
-                        document.getElementById('next-chord').textContent = nextChord;
+            if (i > 0) {
+                previousChord = acordes[i - 1].chord;
+                previousChordImagePath = `./chords/${normalizeChordName(previousChord)}.png`;
+            }
+            if (i < acordes.length - 1) {
+                nextChord = acordes[i + 1].chord;
+                nextChordImagePath = `./chords/${normalizeChordName(nextChord)}.png`;
+            }
+        } else {
+            break;
+        }
+    }
 
-                        const chordImage = document.getElementById('current-chord-img');
-                        chordImage.src = chordImagePath;
-                        chordImage.style.display = chordImagePath ? 'block' : 'none';
+    document.getElementById('current-chord').textContent = currentChord;
+    document.getElementById('previous-chord').textContent = previousChord;
+    document.getElementById('next-chord').textContent = nextChord;
 
-                        const previousChordImage = document.getElementById('previous-chord-img');
-                        previousChordImage.src = previousChordImagePath;
-                        previousChordImage.style.display = previousChordImagePath ? 'block' : 'none';
+    const chordImage = document.getElementById('current-chord-img');
+    chordImage.src = chordImagePath;
+    chordImage.style.display = chordImagePath ? 'block' : 'none';
 
-                        const nextChordImage = document.getElementById('next-chord-img');
-                        nextChordImage.src = nextChordImagePath;
-                        nextChordImage.style.display = nextChordImagePath ? 'block' : 'none';
+    const previousChordImage = document.getElementById('previous-chord-img');
+    previousChordImage.src = previousChordImagePath;
+    previousChordImage.style.display = previousChordImagePath ? 'block' : 'none';
 
-                        document.getElementById('previous-chord-info').style.display = previousChordImagePath ? 'flex' : 'none';
-                        document.getElementById('next-chord-info').style.display = nextChordImagePath ? 'flex' : 'none';
-                        document.getElementById('current-chord-info').style.display = chordImagePath ? 'flex' : 'none';
-                    }
+    const nextChordImage = document.getElementById('next-chord-img');
+    nextChordImage.src = nextChordImagePath;
+    nextChordImage.style.display = nextChordImagePath ? 'block' : 'none';
+
+    document.getElementById('previous-chord-info').style.display = previousChordImagePath ? 'flex' : 'none';
+    document.getElementById('next-chord-info').style.display = nextChordImagePath ? 'flex' : 'none';
+    document.getElementById('current-chord-info').style.display = chordImagePath ? 'flex' : 'none';
+}
+
 // ======================
 
                 });

@@ -25,7 +25,6 @@ main{
 
 .track-controls {
     background-color: #191919;
-    /* background-image: linear-gradient(to right, #121212 60%, #1D1D1D); */
     width: 212px;
     height: 75px;
     margin: 10px 10px 0px 0px;
@@ -210,10 +209,9 @@ main{
     -webkit-appearance: none;
     appearance: none;
     outline: none;
-    margin-left: 12px;
-    margin-top: 1px;
-    height: 2px;
-    width: 75%;
+    height: 5px;
+    width: 90%;
+    min-width: 200px;
 }
 
 .input-renge-vol {
@@ -235,8 +233,8 @@ main{
 }
 
 .input-renge-vol::-webkit-slider-thumb {
-    width: 14px; 
-    height: 14px;
+    width: 18px; 
+    height: 18px;
     border-radius: 50%;
     background-color: #c5a46d;
     cursor: pointer;
@@ -251,7 +249,18 @@ main{
     box-shadow: 0 0 2px #000;
 }
 
+.controls-conteiner {
+    width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
+.controls-conteiner > div {
+    position: relative;
+    margin: 10px;
+    display: flex;
+}
 
 @media (max-width: 768px) {
     main{
@@ -286,6 +295,13 @@ main{
         align-items: center;
         gap: 4px;
         margin-left: 15px;
+    }
+
+    .controls-conteiner {
+        width: 95%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
 }
