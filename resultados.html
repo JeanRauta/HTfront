@@ -249,33 +249,155 @@
                         });
 
                         document.querySelectorAll('.icon-container').forEach((icon, index) => {
-                            icon.addEventListener('click', function (event) {
-                                event.stopPropagation(); 
+    icon.addEventListener('click', function (event) {
+        event.stopPropagation(); 
 
-                                let existingMenu = document.querySelector('.menu-flutuante');
-                                if (existingMenu) {
-                                    existingMenu.remove();
-                                }
+        let existingMenu = document.querySelector('.menu-flutuante');
+        if (existingMenu) {
+            existingMenu.remove();
+        }
 
-                                let menu = document.createElement('div');
-                                menu.className = 'menu-flutuante';
-                                menu.innerHTML = `
-                                    <div class="opcao opcbaixar" data-src="${audioData[index].src}">Baixar</div>
-                                    <div class="opcao opcmidi">Converter para midi</div>
-                                `;
-                                document.body.appendChild(menu);
+        let menu = document.createElement('div');
+        menu.className = 'menu-flutuante';
+        menu.innerHTML = `
+            <div class="opcao opcbaixar" data-src="${audioData[index].src}">Baixar faixa</div>
+            <div class="opcao opcmidi" data-name="${audioData[index].name}" >Converter para midi</div>
+            <div class="opcao opcmidi" data-name="${audioData[index].name}" >Baixar midi</div>
+            <div class="opcao opcplayer" data-name="${audioData[index].name}" >Abrir partitura do midi</div>
+        `;
+        document.body.appendChild(menu);
 
-                                const rect = icon.getBoundingClientRect();
-                                menu.style.top = `${rect.top + window.scrollY}px`;
-                                menu.style.left = `${rect.right + 10}px`;
-                                menu.style.display = 'block';
+        const rect = icon.getBoundingClientRect();
+        menu.style.top = `${rect.top + window.scrollY}px`;
+        menu.style.left = `${rect.right + 10}px`;
+        menu.style.display = 'block';
 
-                                menu.querySelector('.opcbaixar').addEventListener('click', function () {
-                                    const faixaSrc = this.getAttribute('data-src'); 
-                                    baixarFaixa(faixaSrc); 
-                                });
-                            });
-                        });
+        menu.querySelector('.opcbaixar').addEventListener('click', function () {
+            const faixaSrc = this.getAttribute('data-src'); 
+            baixarFaixa(faixaSrc); 
+        });
+
+        // Evento "Converter para midi"
+        menu.querySelector('.opcmidi').addEventListener('click', function () {
+            const faixaName = this.getAttribute('data-name');
+            const opcMidiButton = this; // Referência para o botão "Converter para midi"
+
+            // Bloqueia o botão para evitar múltiplos cliques
+            opcMidiButton.textContent = "Convertendo..."; // Altera o texto
+            opcMidiButton.disabled = true; // Desabilita o botão
+
+            // Dados a serem enviados para a API
+            const data = {
+                faixa: faixaName // ou outro valor necessário
+            };
+
+            // Fazendo a requisição POST para a API
+            fetch('https://htback-edxr.onrender.com/converter-midi', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json()) // Parse a resposta JSON
+            .then(result => {
+                // Verifica se os dados para a faixa já existem no sessionStorage
+                const storedResult = sessionStorage.getItem(faixaName);
+                
+                if (storedResult) {
+                    // Se já existir, não substitui os dados
+                    console.log('Já existe uma conversão para essa faixa:', faixaName);
+                } else {
+                    // Caso contrário, armazena os dados no sessionStorage
+                    sessionStorage.setItem(faixaName, JSON.stringify(result));
+                    console.log('Conversão para MIDI concluída:', result);
+                }
+
+                // Retorna o botão para o estado original
+                opcMidiButton.textContent = "Converter para midi"; 
+                opcMidiButton.disabled = false; // Reabilita o botão
+            })
+            .catch(error => {
+                console.error('Erro ao converter para MIDI:', error);
+                // Reabilita o botão em caso de erro
+                opcMidiButton.textContent = "Converter para midi"; // Restaura o texto
+                opcMidiButton.disabled = false; // Reabilita o botão
+            });
+        });
+
+        // Seleção explícita do botão "Baixar midi"
+        const baixarMidiButton = Array.from(menu.querySelectorAll('.opcmidi'))
+            .find(button => button.textContent === "Baixar midi");
+
+        // Evento "Baixar midi"
+        if (baixarMidiButton) {
+            baixarMidiButton.addEventListener('click', function () {
+                const faixaName = this.getAttribute('data-name');
+
+                // Verifica se o arquivo MIDI está no sessionStorage
+                const storedMidi = sessionStorage.getItem(faixaName);
+
+                if (storedMidi) {
+                    // Se houver o arquivo no sessionStorage, realiza o download
+                    const midiData = JSON.parse(storedMidi);
+                    const midiUrl = midiData[faixaName].midi_file_link; // Acessa o link correto para o arquivo MIDI
+
+                    if (midiUrl) {
+                        const a = document.createElement('a');
+                        a.href = midiUrl; // A URL do arquivo MIDI
+                        a.download = `${faixaName}.midi`; // Nome do arquivo para download
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    } else {
+                        alert('Arquivo MIDI não disponível para essa faixa.');
+                    }
+                } else {
+                    // Se não houver o arquivo no sessionStorage, exibe um alerta
+                    alert('Por favor, converta a faixa para MIDI antes de tentar baixar.');
+                }
+            });
+        }
+
+        // Seleção explícita do botão "Abrir partitura do midi"
+        const abrirPartituraButton = Array.from(menu.querySelectorAll('.opcplayer'))
+            .find(button => button.textContent === "Abrir partitura do midi");
+
+        // Evento "Abrir partitura"
+        if (abrirPartituraButton) {
+            abrirPartituraButton.addEventListener('click', function () {
+                const faixaName = this.getAttribute('data-name');
+
+                // Verifica se o arquivo MIDI está no sessionStorage
+                const storedMidi = sessionStorage.getItem(faixaName);
+
+                if (storedMidi) {
+                    // Se houver o arquivo MIDI no sessionStorage, obtém o link do arquivo ABC
+                    const midiData = JSON.parse(storedMidi);
+                    const abcFileLink = midiData[faixaName].abc_file_link; // Acessa o link do arquivo ABC
+
+                    if (abcFileLink) {
+                        // Salva o link do arquivo ABC no sessionStorage para a nova página
+                        sessionStorage.setItem('abc_file_link', abcFileLink);
+
+                        // Redireciona para a página midip.html
+                        window.location.href = './midip.html';
+                    } else {
+                        alert('Arquivo de partitura ABC não disponível para essa faixa.');
+                    }
+                } else {
+                    // Se o arquivo MIDI não estiver disponível, solicita ao usuário que converta primeiro
+                    alert('Por favor, converta a faixa para MIDI antes de tentar abrir a partitura.');
+                }
+            });
+        }
+    });
+});
+
+
+
+
                     });
 
                     function baixarFaixa(src) {
@@ -284,6 +406,10 @@
                         link.download = src.split('/').pop();  
                         link.click();
                     }
+
+                    // Função para converter a faixa para MIDI
+
+
 
 
 

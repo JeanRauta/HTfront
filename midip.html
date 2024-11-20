@@ -30,6 +30,7 @@
       window.close();
     }
 
+    const storedMidi = sessionStorage.getItem("abc_file_link");
     var abcOptions = { add_classes: true, responsive: "resize" };
 
     function CursorControl() {
@@ -83,7 +84,7 @@
     var synthControl;
 
     function load() {
-      fetch("https://d2vdn8oszh8rp9.cloudfront.net/1456368a61943d60f6a5c60e46c6a9b91791d59da03a1e2c235a079fea93df81/other.txt")
+      fetch(storedMidi)
         .then(response => response.text())
         .then(abc => {
           if (ABCJS.synth.supportsAudio()) {
@@ -120,6 +121,21 @@
           console.warn("Audio problem:", error);
         });
     }
+
+    async function renovarToken() {
+            const token = sessionStorage.getItem('token');
+            if (token) {
+                await fetch('https://htback-edxr.onrender.com/api/renovar-token', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                console.log('Token renovado.');
+            }
+        }
+
+        setInterval(renovarToken, 5000);
   </script>
 </body>
 </html>
