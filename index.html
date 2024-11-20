@@ -114,7 +114,7 @@
             sessionStorage.setItem('token', data.token_sessao);
             console.log('Token gerado:', data.token_sessao);
             renovarToken();
-            setInterval(renovarToken, 5000);
+            setInterval(renovarToken, 30000);
         }
 
         async function renovarToken() {
