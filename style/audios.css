@@ -333,7 +333,7 @@ input {
     position: absolute;
     top: 60px; 
     right: 10px;
-    width: 300px;
+    width: 200px;
     display: none;
     background-color: #333;
     padding: 10px;
@@ -358,4 +358,17 @@ input {
 
 header {
     position: relative; 
+}
+
+.rotate {
+    animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
