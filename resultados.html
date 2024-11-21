@@ -556,6 +556,23 @@ function updateCurrentChord(currentTime) {
     document.getElementById('next-chord-info').style.display = nextChordImagePath ? 'flex' : 'none';
     document.getElementById('current-chord-info').style.display = chordImagePath ? 'flex' : 'none';
 }
+
+const skipSeconds = 10; 
+
+function skipForward() {
+    var currentTime = seekRange.value / 100 * getPlaylistDuration();
+    var newTime = Math.min(currentTime + skipSeconds, getPlaylistDuration());
+    ee.emit("select", newTime, newTime);
+}
+
+function skipBackward() {
+    var currentTime = seekRange.value / 100 * getPlaylistDuration();
+    var newTime = Math.max(currentTime - skipSeconds, 0);
+    ee.emit("select", newTime, newTime);
+}
+
+document.querySelector('.avançar').addEventListener('click', skipForward);
+document.querySelector('.voltar').addEventListener('click', skipBackward);
 // ======================
                 });
             }
